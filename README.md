@@ -15,8 +15,6 @@ One of the main player-versus-player (PvP) formats for the Summoner's Rift game 
 
 For details about the Draft Pick PvP game mode please see the <a href="http://leagueoflegends.wikia.com/wiki/Draft_Pick" target="_blank">League of Legends Wiki Page.</a>
 
-Finalize one Capstone idea based on the feedback you got from mentor(s) and peers on your Section 1 submission, and also based on your newly acquired understanding of the R ecosystem. Think of the following questions:
-
 
 ## What is the problem you want to solve?
 
@@ -45,6 +43,7 @@ Almost all the data to used for this project will come from the <a href="https:/
 httr will be used to make the web API calls, and jsonlite will be used to convert the JSON responses of these API calls into R objects.
 
 I may also use other third party websites that provide certain data, such as winning percentages for champions.
+
 
 ## In brief, outline your approach to solving this problem (knowing that this might change later).
 
