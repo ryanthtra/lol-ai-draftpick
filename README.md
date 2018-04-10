@@ -5,7 +5,7 @@ League of Legends (LoL) is a multiplayer online battle arena videogame by Riot G
 
 For more detailed information about the game, please see <a href="https://en.wikipedia.org/wiki/League_of_Legends#Gameplay" target="_blank">League of Legends on Wikipedia.</a>
 
-One of the main player-versus-player (PvP) formats for the Summoner's Rift game mode, and the format established in most professional LoL tournaments (aka eSports), is Draft Pick.  In the Draft Pick format, each team takes turns in first, banning certain champions which prevents their opponents from drafting them, and then, second, drafting their champions for the match.  In tournaments, the ban and draft process is as shown below:
+One of the main player-versus-player (PvP) formats for the Summoner's Rift game mode, and the format established in most professional LoL tournaments (aka eSports), is Draft Pick.  In the Draft Pick format, each team takes turns in first, banning certain champions which prevents their opponents from drafting them (alas, while also preventing your own team from drafting them), and then, second, drafting their champions for the match.  In tournaments, the ban and draft process is as shown below:
 
 1) First ban phase: A-B-A-B-A-B
 2) First draft phase: A-BB-AA-B
