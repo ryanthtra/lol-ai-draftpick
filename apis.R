@@ -2,7 +2,7 @@ library(httr)
 library(dplyr)
 
 #prefix_domain <- "https://na1.api.riotgames.com"
-acs_prefix_domain <- "https://acs.leagueoflegends.com"
+
 # This api_token will eventually go in a separate file which will be ignored by git.
 #api_token <- "RGAPI-afa7ca6b-3ccd-465d-90c4-51616b4fabb8"
 
@@ -42,7 +42,7 @@ acs_prefix_domain <- "https://acs.leagueoflegends.com"
 #   }
 # }
 
-
+acs_prefix_domain <- "https://acs.leagueoflegends.com"
 # API calls using ACS domain
 get_acs_summoner_by_name_and_region <- function(str_name, str_region) {
   uri <- paste(acs_prefix_domain, "/v1/players?name=", str_name, "&region=", str_region, sep = "")
@@ -102,13 +102,14 @@ nalcs_f_hashes <- c("a774e6c7993c29fa", "f10c8835759ef621", "0e19ce71fe99bf30")
 nalcs_f_matchids <- data.frame(gameids = nalcs_f_gameids, hashes = nalcs_f_hashes)
 nalcs_f_matches <- list()
 nalcs_f_timelines <- list()
-for (i in 1:length(nalcs_finals_matchids$gameids)) {
-  nalcs_f_matches[paste("game", i, sep="")] <- get_acs_match_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
+
+for (i in 1:length(nalcs_f_matchids$gameids)) {
+  nalcs_f_matches[[paste("game", i, sep="")]] <- get_acs_match_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
   nalcs_f_timelines[i] <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
 }
   
 
-nalcs_s2_gameids <- c(1002520268)
-nalcs_s2_hashes <- c("2a185e66a18d0314")
-nalcs_s2_match <- get_acs_match_by_matchid(nalcs_id, nalcs_semis_m2_gameids[1], chr_game_hash = nalcs_semis_m2_hashes[1])
-nalcs_s2_timeline <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_semis_m2_gameids[1], chr_game_hash = nalcs_semis_m2_hashes[1])
+#nalcs_s2_gameids <- c(1002520268)
+#nalcs_s2_hashes <- c("2a185e66a18d0314")
+#nalcs_s2_match <- get_acs_match_by_matchid(nalcs_id, nalcs_semis_m2_gameids[1], chr_game_hash = nalcs_semis_m2_hashes[1])
+#nalcs_s2_timeline <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_semis_m2_gameids[1], chr_game_hash = nalcs_semis_m2_hashes[1])
