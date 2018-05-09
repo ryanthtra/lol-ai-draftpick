@@ -93,11 +93,18 @@ get_acs_match_timeline_by_matchid <- function(chr_platform_id, num_match_id, chr
 # Helper methods
 ######################################
 
-get_league_match_data_list <- function(league_matchid_list) {
-  matchlist <- apply(league_matchid_list[, c('Region.ID', 'Game.ID', 'Hash.ID', 'Blue.Team', 'Red.Team')], 1, function(row) {
-    return(get_acs_match_by_matchid(row[1], row[2], chr_game_hash = row[3]))
+get_league_match_data_list <- function(league_matchid_df) {
+  #matchlist <- apply(league_matchid_df[, c('Region.ID', 'Game.ID', 'Hash.ID', 'Blue.Team', 'Red.Team')], 1, function(row) {
+  #current_match <- get_acs_match_by_matchid(row[1], row[2], chr_game_hash = row[3])
+  
+  #return (current_match)
+  #})
+  matchlist <- sapply(1:nrow(nalcs_matchid_df), function(i) {
+    current_match <- get_acs_match_by_matchid(nalcs_matchid_df$Region.ID[[i]], nalcs_matchid_df$Game.ID[[i]], chr_game_hash = nalcs_matchid_df$Hash.ID[[i]])
+    
+    return(current_match)
   })
-
+  
   return(matchlist)
 }
 
@@ -107,24 +114,28 @@ get_league_match_data_list <- function(league_matchid_list) {
 
 
 # NA LCS 2018 Spring Split -- Regular Season and Playoffs
-nalcs_matchid_list <- read.csv("NALCS_Spring2018.csv")
+nalcs_matchid_df <- read.csv("NALCS_Spring2018.csv")
 # EU LCS 2018 Spring Split -- Regular Season and Playoffs
-eulcs_matchid_list <- read.csv("EULCS_Spring2018.csv")
+eulcs_matchid_df <- read.csv("EULCS_Spring2018.csv")
 
 
+# OLD FOR LOOP IMPLEMENTATION
 #for (i in 1:length(nalcs_f_matchids$gameids)) {
 #nalcs_f_matches[[paste("game", i, sep="")]] <- get_acs_match_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
 #nalcs_f_timelines[i] <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
 #}
 
-nalcs_matches <- get_league_match_data_list(nalcs_matchid_list)
+#nalcs_matches <- get_league_match_data_list(nalcs_matchid_df)
+
+nalcs_single_match <- get_acs_match_by_matchid(nalcs_matchid_df$Region.ID[[1]], nalcs_matchid_df$Game.ID[[1]], chr_game_hash = nalcs_matchid_df$Hash.ID[[1]])
 
 # Get the "teams" data frame, which contains who won/lost, first blood, first baron, etc.
 # Will need to wrangle so that team names are in each row, "Team 100/200" is changed to Blue/Red,
 # and each entry in the list is concatenated into a large list, in order to do data visualization.
-nalcs_matches_teams <- lapply(nalcs_matches, function(row) {
-  #TODO: obtain team names of each match 
+#nalcs_matches_teams <- sapply(1:length(nalcs_matches), function(i) {
+  ##Add team name column
+  #nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
+  #return(nalcs_matches[[i]]$teams)
+#})
 
-
-  return(row$teams)
-})
+nalcs_single_match$teams["teamNames"] <- c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])
