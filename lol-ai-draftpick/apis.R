@@ -136,8 +136,9 @@ nalcs_matches_teams_accum <- data.frame()
 nalcs_matches_teams <- sapply(1:length(nalcs_matches), function(i) {
   #Add team name column
   nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
-  nalcs_matches_teams_accum %>% bind_rows(nalcs_matches[[i]]$teams)
   return(nalcs_matches[[i]]$teams)
 })
-
+for (i in 1:length(nalcs_matches_teams)) {
+  nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches_teams[[i]])
+}
 nalcs_single_match$teams["teamNames"] <- c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])
