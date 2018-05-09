@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2043
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{DA7A21FA-8162-4350-AD77-A8D1B671F3ED}") = "lol-ai-draftpick", "lol-ai-draftpick.rxproj", "{2FED5F9B-FB51-42D2-B2F6-D02A3C1EEF6A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2FED5F9B-FB51-42D2-B2F6-D02A3C1EEF6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FED5F9B-FB51-42D2-B2F6-D02A3C1EEF6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FED5F9B-FB51-42D2-B2F6-D02A3C1EEF6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FED5F9B-FB51-42D2-B2F6-D02A3C1EEF6A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {596B8A56-2A12-4DFC-8A25-A0362D319386}
+	EndGlobalSection
+EndGlobal

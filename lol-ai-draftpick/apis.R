@@ -43,14 +43,16 @@ library(dplyr)
 # }
 
 acs_prefix_domain <- "https://acs.leagueoflegends.com"
+#######################################################
 # API calls using ACS domain
+######################################
 get_acs_summoner_by_name_and_region <- function(str_name, str_region) {
   uri <- paste(acs_prefix_domain, "/v1/players?name=", str_name, "&region=", str_region, sep = "")
   print(uri)
   response <- GET(uri)
   if (response$status_code == 200) {
     json <- jsonlite::fromJSON(content(response, as = "text"))
-    return (json)
+    return(json)
   }
 }
 
@@ -60,7 +62,7 @@ get_acs_player_history_by_platform_and_account_id <- function(chr_platform_id = 
   response <- GET(uri)
   if (response$status_code == 200) {
     json <- jsonlite::fromJSON(content(response, as = "text"))
-    return (json)
+    return(json)
   }
 }
 
@@ -70,7 +72,7 @@ get_acs_match_by_matchid <- function(chr_platform_id, num_match_id, chr_game_has
   response <- GET(uri)
   if (response$status_code == 200) {
     json <- jsonlite::fromJSON(content(response, as = "text"))
-    return (json)
+    return(json)
   }
 }
 
@@ -80,36 +82,49 @@ get_acs_match_timeline_by_matchid <- function(chr_platform_id, num_match_id, chr
   response <- GET(uri)
   if (response$status_code == 200) {
     json <- jsonlite::fromJSON(content(response, as = "text"))
-    return (json)
+    return(json)
   }
 }
+######################################
+# End -- API methods
+######################################
 
+######################################
+# Helper methods
+######################################
 
-# my_summoner <- get_summoner_by_name("TSM%20Zven")
-# my_matchlist <- get_matchlist_by_accountid_and_season(my_summoner$accountId, 11)
-# my_match <- get_match_by_matchid(my_matchlist$matches$gameId[1])
-# my_timeline <- get_match_timeline_by_matchid(my_matchlist$matches$gameId[1])
-# 
-# acs_summoner <- get_acs_summoner_by_name_and_region("TSM%20Zven", "EUW1")
-# acs_history <- get_acs_player_history_by_platform_and_account_id(chr_platform_id = "EUW1", num_account_id = 23402463)
-# acs_match <- get_acs_match_by_matchid(num_match_id = my_matchlist$matches$gameId[1])
-# acs_timeline <- get_acs_match_timeline_by_matchid(num_match_id = my_matchlist$matches$gameId[1])
+get_league_match_data_list <- function(league_matchid_list) {
+  matchlist <- apply(league_matchid_list[, c('Region.ID', 'Game.ID', 'Hash.ID', 'Blue.Team', 'Red.Team')], 1, function(row) {
+    return(get_acs_match_by_matchid(row[1], row[2], chr_game_hash = row[3]))
+  })
 
-# NA LCS 2018 Spring Split Finals
-nalcs_id = "TRLH1"
-nalcs_f_gameids <- c(1002530069, 1002530071, 1002530072)
-nalcs_f_hashes <- c("a774e6c7993c29fa", "f10c8835759ef621", "0e19ce71fe99bf30")
-nalcs_f_matchids <- data.frame(gameids = nalcs_f_gameids, hashes = nalcs_f_hashes)
-nalcs_f_matches <- list()
-nalcs_f_timelines <- list()
-
-for (i in 1:length(nalcs_f_matchids$gameids)) {
-  nalcs_f_matches[[paste("game", i, sep="")]] <- get_acs_match_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
-  nalcs_f_timelines[i] <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
+  return(matchlist)
 }
-  
 
-#nalcs_s2_gameids <- c(1002520268)
-#nalcs_s2_hashes <- c("2a185e66a18d0314")
-#nalcs_s2_match <- get_acs_match_by_matchid(nalcs_id, nalcs_semis_m2_gameids[1], chr_game_hash = nalcs_semis_m2_hashes[1])
-#nalcs_s2_timeline <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_semis_m2_gameids[1], chr_game_hash = nalcs_semis_m2_hashes[1])
+######################################
+# End -- Helper methods
+######################################
+
+
+# NA LCS 2018 Spring Split -- Regular Season and Playoffs
+nalcs_matchid_list <- read.csv("NALCS_Spring2018.csv")
+# EU LCS 2018 Spring Split -- Regular Season and Playoffs
+eulcs_matchid_list <- read.csv("EULCS_Spring2018.csv")
+
+
+#for (i in 1:length(nalcs_f_matchids$gameids)) {
+#nalcs_f_matches[[paste("game", i, sep="")]] <- get_acs_match_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
+#nalcs_f_timelines[i] <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
+#}
+
+nalcs_matches <- get_league_match_data_list(nalcs_matchid_list)
+
+# Get the "teams" data frame, which contains who won/lost, first blood, first baron, etc.
+# Will need to wrangle so that team names are in each row, "Team 100/200" is changed to Blue/Red,
+# and each entry in the list is concatenated into a large list, in order to do data visualization.
+nalcs_matches_teams <- lapply(nalcs_matches, function(row) {
+  #TODO: obtain team names of each match 
+
+
+  return(row$teams)
+})
