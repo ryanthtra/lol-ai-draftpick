@@ -132,13 +132,13 @@ nalcs_single_match <- get_acs_match_by_matchid(nalcs_matchid_df$Region.ID[[1]], 
 # Get the "teams" data frame, which contains who won/lost, first blood, first baron, etc.
 # Will need to wrangle so that team names are in each row, "Team 100/200" is changed to Blue/Red,
 # and each entry in the list is concatenated into a large list, in order to do data visualization.
-nalcs_matches_teams_accum <- data.frame()
 nalcs_matches_teams <- sapply(1:length(nalcs_matches), function(i) {
   #Add team name column
-  nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
+  #nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
   return(nalcs_matches[[i]]$teams)
 })
+nalcs_matches_teams_accum <- data.frame()
 for (i in 1:length(nalcs_matches_teams)) {
-  nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches_teams[[i]])
+  nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches_teams[i])
 }
 nalcs_single_match$teams["teamNames"] <- c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])
