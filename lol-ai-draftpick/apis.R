@@ -125,20 +125,22 @@ eulcs_matchid_df <- read.csv("EULCS_Spring2018.csv")
 #nalcs_f_timelines[i] <- get_acs_match_timeline_by_matchid(nalcs_id, nalcs_f_matchids$gameids[i], chr_game_hash = nalcs_f_matchids$hashes[i])
 #}
 
-nalcs_matches <- get_league_match_data_list(nalcs_matchid_df)
+#nalcs_matches <- get_league_match_data_list(nalcs_matchid_df)
 
 nalcs_single_match <- get_acs_match_by_matchid(nalcs_matchid_df$Region.ID[[1]], nalcs_matchid_df$Game.ID[[1]], chr_game_hash = nalcs_matchid_df$Hash.ID[[1]])
 
 # Get the "teams" data frame, which contains who won/lost, first blood, first baron, etc.
 # Will need to wrangle so that team names are in each row, "Team 100/200" is changed to Blue/Red,
 # and each entry in the list is concatenated into a large list, in order to do data visualization.
-nalcs_matches_teams <- sapply(1:length(nalcs_matches), function(i) {
-  #Add team name column
-  #nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
-  return(nalcs_matches[[i]]$teams)
-})
-nalcs_matches_teams_accum <- data.frame()
-for (i in 1:length(nalcs_matches_teams)) {
-  nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches_teams[i])
-}
-nalcs_single_match$teams["teamNames"] <- c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])
+#nalcs_matches_teams <- sapply(1:length(nalcs_matches), function(i) {
+  ##Add team name column
+  ##nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
+  #return(nalcs_matches[[i]]$teams)
+#})
+#nalcs_matches_teams_accum <- data.frame()
+#for (i in 1:length(nalcs_matches_teams)) {
+  #nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches_teams[i])
+#}
+#nalcs_single_match$teams["teamNames"] <- c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])
+#nalcs_single_match$teams["teamNames"] <- as.character(c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")]))
+nalcs_single_match$teams["teamNames"] <- unname(unlist(c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])))
