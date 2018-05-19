@@ -183,17 +183,17 @@ na_bluered_avg_stats <- nalcs_matches_teams_accum %>%
   group_by(teamId) %>%
   summarise_each(funs(mean), towerKillAvg=towerKills, inhibitorKillAvg=inhibitorKills, baronKillAvg=baronKills, dragonKillAvg=dragonKills, riftHeraldKillAvg=riftHeraldKills)
 
-View(
-  nalcs_matches_teams_accum %>%
-    group_by(teamNames, teamId, win) %>%
-    tally(sort = FALSE))
+#View(
+  #nalcs_matches_teams_accum %>%
+    #group_by(teamNames, teamId, win) %>%
+    #tally(sort = FALSE))
 
-View(
-  nalcs_matches_teams_accum %>%
-    group_by(teamId, teamNames) %>%
-    select(win) %>%
-    table() 
-)
+#View(
+  #nalcs_matches_teams_accum %>%
+    #group_by(teamId, teamNames) %>%
+    #select(win) %>%
+    #table() 
+#)
 
 eulcs_matches_teams_accum <- get_accum_matches_teams(eulcs_matches, eulcs_matchid_df)
 eu_win_blue <- eulcs_matches_teams_accum %>% filter(teamId == "Blue" & win == "Win")
