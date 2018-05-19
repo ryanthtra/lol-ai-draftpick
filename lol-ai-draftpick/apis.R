@@ -120,6 +120,30 @@ get_league_match_data_list <- function(league_matchid_df) {
   return(matchlist)
 }
 
+get_league_timeline_data_list <- function(league_matchid_df) {
+  # OLD FOR LOOP IMPLEMENTATION
+  timelinelist <- list()
+  for (i in 1:nrow(league_matchid_df)) {
+    timelinelist[[i]] <- get_acs_match_by_matchid(league_matchid_df$Region.ID[[i]], league_matchid_df$Game.ID[[i]], chr_game_hash = league_matchid_df$Hash.ID[[i]])
+  }
+  return(timelinelist)
+}
+
+get_accum_matches_teams <- function(league_matchlist, league_matchid_df) {
+  league_matches_teams_accum <- data.frame(NULL)
+  for (i in 1:length(league_matchlist)) {
+    league_matchlist[[i]]$teams["teamNames"] <- unname(unlist(c(league_matchid_df[i, c("Blue.Team", "Red.Team")])))
+    # Concatenate rows from current match onto the accumulation DF
+    league_matches_teams_accum <- league_matches_teams_accum %>% bind_rows(league_matchlist[[i]]$teams)
+  }
+  #Change all teamId = 100/200 to Blue/Red
+  league_matches_teams_accum <- league_matches_teams_accum %>%
+    mutate(teamId = replace(teamId, grepl('100', teamId), 'Blue')) %>%
+    mutate(teamId = replace(teamId, grepl('200', teamId), 'Red'))
+  return (league_matches_teams_accum)
+}
+
+
 ######################################
 # End -- Helper methods
 ######################################
@@ -128,35 +152,57 @@ get_league_match_data_list <- function(league_matchid_df) {
 # NA LCS 2018 Spring Split -- Regular Season and Playoffs
 nalcs_matchid_df <- read.csv("NALCS_Spring2018.csv")
 # EU LCS 2018 Spring Split -- Regular Season and Playoffs
-#eulcs_matchid_df <- read.csv("EULCS_Spring2018.csv")
+eulcs_matchid_df <- read.csv("EULCS_Spring2018.csv")
+# MSI 2018 Play-In Stage
+msipi_matchid_df <- read.csv("MSI_PlayInAll2018.csv")
+
 
 nalcs_matches <- get_league_match_data_list(nalcs_matchid_df)
+eulcs_matches <- get_league_match_data_list(eulcs_matchid_df)
+msipi_matches <- get_league_match_data_list(msipi_matchid_df)
 
 nalcs_single_match <- get_acs_match_by_matchid(nalcs_matchid_df$Region.ID[[1]], nalcs_matchid_df$Game.ID[[1]], chr_game_hash = nalcs_matchid_df$Hash.ID[[1]])
 
 # Get the "teams" data frame, which contains who won/lost, first blood, first baron, etc.
 # Will need to wrangle so that team names are in each row, "Team 100/200" is changed to Blue/Red,
 # and each entry in the list is concatenated into a large list, in order to do data visualization.
-#nalcs_matches_teams <- list()
-#nalcs_matches_teams <- sapply(1:ncol(nalcs_matches), function(i) {
-#nalcs_matches_teams <- sapply(1:length(nalcs_matches), function(i) {
-  ##Add team name column
-  ##nalcs_matches[[i]]$teams["teamNames"] <- c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])
-  #nalcs_matches[[i]]$teams["teamNames"] <- unname(unlist(c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])))
-  ##nalcs_matches[, i]$teams["teamNames"] <- unname(unlist(c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])))
-  #return(nalcs_matches[[i]]$teams)
-  ##return(nalcs_matches[, i]$teams)
-#})
-nalcs_matches_teams_accum <- data.frame(NULL)
-for (i in 1:length(nalcs_matches)) {
-  nalcs_matches[[i]]$teams["teamNames"] <- unname(unlist(c(nalcs_matchid_df[i, c("Blue.Team", "Red.Team")])))
-  #nalcs_matches_teams[[i]] <- nalcs_matches[[i]]$teams
-  nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches[[i]]$teams)
-}
-#nalcs_matches_teams_accum <- nalcs_matches_teams[[1]]
-#for (i in 2:length(nalcs_matches_teams)) {
-  #nalcs_matches_teams_accum <- nalcs_matches_teams_accum %>% bind_rows(nalcs_matches_teams[[i]])
-#}
-#nalcs_single_match$teams["teamNames"] <- c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])
-#nalcs_single_match$teams["teamNames"] <- as.character(c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")]))
+
 nalcs_single_match$teams["teamNames"] <- unname(unlist(c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])))
+
+nalcs_matches_teams_accum <- get_accum_matches_teams(nalcs_matches, nalcs_matchid_df)
+#na_win_blue <- nalcs_matches_teams_accum %>% filter(teamId == "Blue" & win == "Win")
+#na_win_red <- nalcs_matches_teams_accum %>% filter(teamId == "Red" & win == "Win")
+#na_win_firstblood <- nalcs_matches_teams_accum %>% filter(firstBlood == "TRUE" & win == "Win")
+#na_win_firsttower <- nalcs_matches_teams_accum %>% filter(firstTower == "TRUE" & win == "Win")
+#na_win_firstinhib <- nalcs_matches_teams_accum %>% filter(firstInhibitor == "TRUE" & win == "Win")
+#na_win_firstbaron <- nalcs_matches_teams_accum %>% filter(firstBaron == "TRUE" & win == "Win")
+#na_win_firstdragon <- nalcs_matches_teams_accum %>% filter(firstDragon == "TRUE" & win == "Win")
+#na_win_riftheraldkill <- nalcs_matches_teams_accum %>% filter(riftHeraldKills == 1 & win == "Win")
+
+na_bluered_avg_stats <- nalcs_matches_teams_accum %>%
+  group_by(teamId) %>%
+  summarise_each(funs(mean), towerKillAvg=towerKills, inhibitorKillAvg=inhibitorKills, baronKillAvg=baronKills, dragonKillAvg=dragonKills, riftHeraldKillAvg=riftHeraldKills)
+
+View(
+  nalcs_matches_teams_accum %>%
+    group_by(teamNames, teamId, win) %>%
+    tally(sort = FALSE))
+
+View(
+  nalcs_matches_teams_accum %>%
+    group_by(teamId, teamNames) %>%
+    select(win) %>%
+    table() 
+)
+
+eulcs_matches_teams_accum <- get_accum_matches_teams(eulcs_matches, eulcs_matchid_df)
+eu_win_blue <- eulcs_matches_teams_accum %>% filter(teamId == "Blue" & win == "Win")
+eu_win_red <- eulcs_matches_teams_accum %>% filter(teamId == "Red" & win == "Win")
+eu_bluered_avg_stats <- eulcs_matches_teams_accum %>%
+  group_by(teamId) %>%
+  summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
+
+msipi_matches_teams_accum <- get_accum_matches_teams(msipi_matches, msipi_matchid_df)
+msipi_bluered_avg_stats <- msipi_matches_teams_accum %>%
+  group_by(teamId) %>%
+  summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
