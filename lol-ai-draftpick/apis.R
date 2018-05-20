@@ -1,5 +1,6 @@
 library(httr)
 library(dplyr)
+suppressMessages(library(dplyr))
 #library(future)
 
 #prefix_domain <- "https://na1.api.riotgames.com"
@@ -46,7 +47,7 @@ library(dplyr)
 acs_prefix_domain <- "https://acs.leagueoflegends.com"
 #######################################################
 # API calls using ACS domain
-######################################
+#######################################################
 
 # API call helper from response
 process_uri <- function(str_uri) {
@@ -147,8 +148,17 @@ get_league_timeline_data_list <- function(league_matchid_df) {
 get_accum_matches_teams <- function(league_matchlist, league_matchid_df) {
   league_matches_teams_accum <- data.frame(NULL)
   for (i in 1:length(league_matchlist)) {
+    # Add team names column
     league_matchlist[[i]]$teams["teamName"] <- unname(unlist(c(league_matchid_df[i, c("Blue.Team", "Red.Team")])))
+    # Add game number column
     league_matchlist[[i]]$teams["gameNumber"] <- c(i, i)
+    # TODO: Alter bans DFs so that we can get associated champion name with the key
+    league_matchlist[[i]]$teams$bans <- lapply(league_matchlist[[i]]$teams$bans, function(item) {
+      # Add 6 to 4th and 5th rows of pickTurn in order to get the correct ban order.
+      item[4:5,] <- item[4:5,] %>%
+        mutate(pickTurn = as.numeric(pickTurn) + 6)
+      left_join(item, champions_df_simple)
+    })
     # Concatenate rows from current match onto the accumulation DF
     league_matches_teams_accum <- league_matches_teams_accum %>% bind_rows(league_matchlist[[i]]$teams)
   }
@@ -159,6 +169,10 @@ get_accum_matches_teams <- function(league_matchlist, league_matchid_df) {
   return(league_matches_teams_accum)
 }
 
+get_accume_matches_stats <- function(league_matchlist, league_matchid_df) {
+
+}
+
 
 get_league_bluered_winpct_by_team <- function(league_matches_teams_accum) {
   return_df <- inner_join(
@@ -167,11 +181,22 @@ get_league_bluered_winpct_by_team <- function(league_matches_teams_accum) {
   ) %>%
     mutate("win%" = wins / games)
 
-  return (return_df)
+  return(return_df)
 }
 #*************************************
 # End -- Helper methods
 #*************************************
+
+
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#
+#                                  START -- "MAIN" CODE
+#
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 
 # Champion data
 
@@ -182,7 +207,9 @@ for (i in 1:length(champions_list)) {
 }
 champions_df_simple <- champions_df %>%
   select(name, key) %>%
-  distinct()
+  distinct() %>%
+  rename(championId = key) %>%
+  mutate(championId = as.numeric(championId))
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # NA LCS data (Spring Split 2018)
@@ -201,6 +228,11 @@ nalcs_single_match <- get_acs_match_by_matchid(nalcs_matchid_df$Region.ID[[1]], 
 
 nalcs_single_match$teams["teamName"] <- unname(unlist(c(nalcs_matchid_df[1, c("Blue.Team", "Red.Team")])))
 
+nalcs_single_match$teams$bans <- lapply(nalcs_single_match$teams$bans, function(item) {
+  item[4:5,] <- item[4:5,] %>%
+    mutate(pickTurn = as.numeric(pickTurn) + 6)
+  left_join(item, champions_df_simple)
+})
 nalcs_matches_teams_accum <- get_accum_matches_teams(nalcs_matches, nalcs_matchid_df)
 #na_win_blue <- nalcs_matches_teams_accum %>% filter(teamId == "Blue" & win == "Win")
 #na_win_red <- nalcs_matches_teams_accum %>% filter(teamId == "Red" & win == "Win")
@@ -223,11 +255,11 @@ na_bluered_avgs_by_team <- nalcs_matches_teams_accum %>%
   group_by(teamName, teamId) %>%
   summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
 #na_bluered_totals_by_team <- nalcs_matches_teams_accum %>%
-  #group_by(teamName, teamId) %>%
-  #summarise_each(funs(sum), towerKillTot = towerKills, inhibitorKillTot = inhibitorKills, baronKillTot = baronKills, dragonKillTot = dragonKills, riftHeraldKillTot = riftHeraldKills)
+#group_by(teamName, teamId) %>%
+#summarise_each(funs(sum), towerKillTot = towerKills, inhibitorKillTot = inhibitorKills, baronKillTot = baronKills, dragonKillTot = dragonKills, riftHeraldKillTot = riftHeraldKills)
 na_bluered_winpct_by_team <- get_league_bluered_winpct_by_team(nalcs_matches_teams_accum)
 
-  
+
 
 
 
@@ -241,15 +273,15 @@ na_bluered_winpct_by_team <- get_league_bluered_winpct_by_team(nalcs_matches_tea
 #eulcs_matches <- get_league_match_data_list(eulcs_matchid_df)
 #eulcs_matches_teams_accum <- get_accum_matches_teams(eulcs_matches, eulcs_matchid_df)
 #eu_bluered_avg_stats <- eulcs_matches_teams_accum %>%
-  #group_by(teamId) %>%
-  #summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
+#group_by(teamId) %>%
+#summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
 #eu_bluered_wins <- eulcs_matches_teams_accum %>%
-  #group_by(teamId, win) %>%
-  #filter(win == "Win") %>%
-  #count(win)
+#group_by(teamId, win) %>%
+#filter(win == "Win") %>%
+#count(win)
 #eu_bluered_avgs_by_team <- eulcs_matches_teams_accum %>%
-  #group_by(teamName, teamId) %>%
-  #summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
+#group_by(teamName, teamId) %>%
+#summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
 #eu_bluered_winpct_by_team <- get_league_bluered_winpct_by_team(eulcs_matches_teams_accum)
 
 
