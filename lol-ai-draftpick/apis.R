@@ -289,12 +289,14 @@ na_bluered_winpct_by_team <- get_league_bluered_winpct_by_team(nalcs_matches_tea
 # MSI 2018 data
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-## MSI 2018 Play-In Stage
-#msipi_matchid_df <- read.csv("MSI_PlayInAll2018.csv")
-## Group Stage 
-#msigs_matchid_df <- read.csv("MSI_GroupStage2018.csv")
-## Group Stage Tiebreakers and Knockouts
-#msiko_matchid_df <- read.csv("MSI_GroupStageTBKO2018.csv")
+# MSI 2018 Play-In Stage
+msipi_matchid_df <- read.csv("MSI_PlayInAll2018.csv")
+# Group Stage 
+msigs_matchid_df <- read.csv("MSI_GroupStage2018.csv")
+# Group Stage Tiebreakers and Knockouts
+msiko_matchid_df <- read.csv("MSI_GroupStageTBKO2018.csv")
+# All MSI 2018
+msiall_matchid_df <- read.csv("MSI_All2018.csv")
 
 #msipi_matches <- get_league_match_data_list(msipi_matchid_df)
 #msipi_matches_teams_accum <- get_accum_matches_teams(msipi_matches, msipi_matchid_df)
@@ -302,6 +304,17 @@ na_bluered_winpct_by_team <- get_league_bluered_winpct_by_team(nalcs_matches_tea
 #group_by(teamId) %>%
 #summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
 #msipi_bluered_wins <- msipi_matches_teams_accum %>%
-#group_by(teamId, win) %>%
-#filter(win == "Win") %>%
-#count(win)
+  #group_by(teamId, win) %>%
+  #filter(win == "Win") %>%
+  #count(win)
+
+msiall_matches <- get_league_match_data_list(msiall_matchid_df)
+msiall_matches_teams_accum <- get_accum_matches_teams(msiall_matches, msiall_matchid_df)
+msiall_bluered_avg_stats <- msiall_matches_teams_accum %>%
+  group_by(teamId) %>%
+  summarise_each(funs(mean), towerKillAvg = towerKills, inhibitorKillAvg = inhibitorKills, baronKillAvg = baronKills, dragonKillAvg = dragonKills, riftHeraldKillAvg = riftHeraldKills)
+msiall_bluered_wins <- msiall_matches_teams_accum %>%
+  group_by(teamId, win) %>%
+  filter(win == "Win") %>%
+  count(win)
+msiall_bluered_winpct_by_team <- get_league_bluered_winpct_by_team(msiall_matches_teams_accum)
