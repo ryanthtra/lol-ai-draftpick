@@ -1,5 +1,6 @@
 library(httr)
 library(dplyr)
+library(jsonlite)
 suppressMessages(library(dplyr))
 #library(future)
 
@@ -106,7 +107,7 @@ get_champion_data_by_version <- function(chr_version_number = "8.8.2") {
 
 
 ######################################
-# Helper methods
+# Helper and wrangling methods
 ######################################
 
 get_league_match_data_list <- function(league_matchid_df) {
@@ -169,9 +170,23 @@ get_accum_matches_teams <- function(league_matchlist, league_matchid_df) {
   return(league_matches_teams_accum)
 }
 
-get_accume_matches_stats <- function(league_matchlist, league_matchid_df) {
+get_accum_matches_stats <- function(league_matchlist, league_matchid_df) {
 
 }
+
+get_flattened_match_participants_df <- function(match_participants_df) {
+  # uses jsonline flatten() function
+  ret_df <- match_participants_df %>% 
+    select(-stats, -timeline) %>% 
+    inner_join(match_participants_df$stats) %>% 
+    inner_join(match_participants_df$timeline %>% 
+                 flatten())
+  # Change teamId = 100/200 to Blue/Red
+  league_matches_teams_accum <- league_matches_teams_accum %>%
+    mutate(teamId = replace(teamId, grepl('100', teamId), 'Blue')) %>%
+    mutate(teamId = replace(teamId, grepl('200', teamId), 'Red'))
+}
+
 
 
 get_league_bluered_winpct_by_team <- function(league_matches_teams_accum) {
